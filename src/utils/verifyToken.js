@@ -1,9 +1,19 @@
 import jwt from "jsonwebtoken";
 
-export function verifyToken(req) {
+const JWT_SECRET = process.env.JWT_SECRET || "dummysecret123"; // use your real secret
+
+export function verifyTokenFromHeader(req) {
   const authHeader = req.headers.get("authorization");
-  if (!authHeader) throw new Error("No token");
+
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    throw new Error("No token provided");
+  }
 
   const token = authHeader.split(" ")[1];
-  return jwt.verify(token, process.env.JWT_SECRET);
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    return decoded; // { userId, name, ... }
+  } catch (error) {
+    throw new Error("Invalid or expired token");
+  }
 }

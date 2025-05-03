@@ -1,12 +1,15 @@
 import mongoose from "mongoose";
 
-const MONGODB_URI =
-  "mongodb+srv://potnuruavinash111:mFGGuLHpL2zlyQW2@cluster0.gejcrvd.mongodb.net/?task manger";
+const MONGODB_URI = process.env.MONGODB_URI;
+console.log(MONGODB_URI);
 
 if (!MONGODB_URI) {
-  throw new Error("Please define the MONGODB_URI environment variable");
+  throw new Error(
+    "❌ Please define the MONGODB_URI environment variable in .env.local"
+  );
 }
 
+// Global cache for hot-reloading in development
 let cached = global.mongoose;
 
 if (!cached) {
@@ -21,8 +24,16 @@ export async function connectDB() {
       .connect(MONGODB_URI, {
         bufferCommands: false,
       })
-      .then((mongoose) => mongoose);
+      .then((mongoose) => {
+        console.log("✅ Connected to MongoDB");
+        return mongoose;
+      })
+      .catch((err) => {
+        console.error("❌ MongoDB connection error:", err.message);
+        throw err;
+      });
   }
+
   cached.conn = await cached.promise;
   return cached.conn;
 }
