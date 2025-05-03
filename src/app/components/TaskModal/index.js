@@ -3,8 +3,11 @@ import { useForm } from "react-hook-form";
 import { useEffect } from "react";
 import { Dialog } from "@headlessui/react";
 import { toast } from "react-hot-toast";
+import useLocalStorage from "@/app/hooks/useLocalStorage";
 
 export default function TaskModal({ isOpen, onClose, task, onSuccess }) {
+  const { token } = useLocalStorage();
+
   const {
     register,
     handleSubmit,
@@ -18,8 +21,6 @@ export default function TaskModal({ isOpen, onClose, task, onSuccess }) {
   }, [task, reset]);
 
   const onSubmit = async (data) => {
-    const token = localStorage.getItem("token");
-
     try {
       const response = await fetch(`/api/tasks${task ? `/${task._id}` : ""}`, {
         method: task ? "PUT" : "POST",
@@ -57,7 +58,9 @@ export default function TaskModal({ isOpen, onClose, task, onSuccess }) {
               placeholder="Title"
               className="w-full border p-2 rounded"
             />
-            {errors.title && <p className="text-red-500 text-sm">Title is required</p>}
+            {errors.title && (
+              <p className="text-red-500 text-sm">Title is required</p>
+            )}
 
             <textarea
               {...register("description")}
@@ -65,13 +68,19 @@ export default function TaskModal({ isOpen, onClose, task, onSuccess }) {
               className="w-full border p-2 rounded"
             />
 
-            <select {...register("status")} className="w-full border p-2 rounded">
+            <select
+              {...register("status")}
+              className="w-full border p-2 rounded"
+            >
               <option value="pending">Pending</option>
               <option value="in progress">In Progress</option>
               <option value="completed">Completed</option>
             </select>
 
-            <select {...register("priority")} className="w-full border p-2 rounded">
+            <select
+              {...register("priority")}
+              className="w-full border p-2 rounded"
+            >
               <option value="low">Low</option>
               <option value="medium">Medium</option>
               <option value="high">High</option>

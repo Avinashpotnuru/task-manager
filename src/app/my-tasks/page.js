@@ -6,35 +6,32 @@ import useLocalStorage from "../hooks/useLocalStorage";
 // Replace with real auth logic
 
 export default function MyTasks() {
-  const [currentUser,setCurrentUser] = useState("");
+  const [currentUser, setCurrentUser] = useState("");
   const [tasks, setTasks] = useState([]);
   const [statusFilter, setStatusFilter] = useState("");
   const [priorityFilter, setPriorityFilter] = useState("");
   const [dueFilter, setDueFilter] = useState("all");
   const [loading, setLoading] = useState(true);
-  const {getItem}= useLocalStorage();
-  console.log(getItem("token"))
 
+  const { getItem } = useLocalStorage();
+  
+  console.log(getItem("token"));
 
   useEffect(() => {
     const fetchTasks = async () => {
-        const token = localStorage.getItem("token");
-        const user= localStorage.getItem("user");
-        // const token = getItem("token");
-        // const user= getItem("user");
-      
+      getItem("token");
+      getItem("user");
 
-        console.log(user);
-        if(user){
-          try {
-            const parsed = JSON.parse(user);
-            setCurrentUser(parsed.name || "User");
-          } catch {
-            setCurrentUser("User");
-          }
+      console.log(user);
+      if (user) {
+        try {
+          const parsed = JSON.parse(user);
+          setCurrentUser(parsed.name || "User");
+        } catch {
+          setCurrentUser("User");
         }
+      }
 
-        
       try {
         const res = await fetch("/api/tasks", {
           method: "GET",
@@ -54,19 +51,19 @@ export default function MyTasks() {
     fetchTasks();
   }, []);
 
- const filteredTasks = tasks.filter((task) => {
-   const matchesUser = task.assignedTo === currentUser; // Only tasks assigned to this user
-   const matchesStatus = statusFilter ? task.status === statusFilter : true;
-   const matchesPriority = priorityFilter
-     ? task.priority === priorityFilter
-     : true;
-   const isOverdue =
-     dueFilter === "overdue"
-       ? new Date(task.dueDate) < new Date() && task.status !== "completed"
-       : true;
+  const filteredTasks = tasks.filter((task) => {
+    const matchesUser = task.assignedTo === currentUser; // Only tasks assigned to this user
+    const matchesStatus = statusFilter ? task.status === statusFilter : true;
+    const matchesPriority = priorityFilter
+      ? task.priority === priorityFilter
+      : true;
+    const isOverdue =
+      dueFilter === "overdue"
+        ? new Date(task.dueDate) < new Date() && task.status !== "completed"
+        : true;
 
-   return matchesUser && matchesStatus && matchesPriority && isOverdue;
- });
+    return matchesUser && matchesStatus && matchesPriority && isOverdue;
+  });
 
   if (loading) return <p className="text-center mt-10">Loading tasks...</p>;
 

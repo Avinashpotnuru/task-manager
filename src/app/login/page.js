@@ -5,7 +5,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import useLocalStorage from "../hooks/useLocalStorage";
+
+import useStorageAuth from "../hooks/useLocalStorage";
 
 export default function LoginForm() {
   const {
@@ -14,7 +15,8 @@ export default function LoginForm() {
     formState: { errors },
   } = useForm();
   const [isError, setIsError] = useState(false);
-  const { setItem } = useLocalStorage();
+
+  const { setItem } = useStorageAuth();
   const router = useRouter();
 
   const onSubmit = async (data) => {
@@ -30,11 +32,13 @@ export default function LoginForm() {
       if (response.ok) {
         // Store the token in localStorage
         //  setItem("token", result.token); // ✅ token (string)
-        //  setItem("user", result.user); 
+        //  setItem("user", result.user);
 
-        localStorage.setItem("token", result.token);
-        localStorage.setItem("user", JSON.stringify(result.user));
-       
+        // localStorage.setItem("token", result.token);
+        // localStorage.setItem("user", JSON.stringify(result.user));
+
+        setItem("token", result.token);
+        setItem("user", JSON.stringify(result.user));
 
         toast.success("Login successful!"); // Show success toast
         router.push("/"); // Navigate to home

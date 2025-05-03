@@ -2,27 +2,17 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import useLocalStorage from "@/app/hooks/useLocalStorage";
 
 export default function Header() {
-  const [userName, setUserName] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
   const router = useRouter();
-
-  useEffect(() => {
-    const user = localStorage.getItem("user");
-    if (user) {
-      try {
-        const parsed = JSON.parse(user);
-        setUserName(parsed.name || "User");
-      } catch {
-        setUserName("User");
-      }
-    }
-  }, []);
+  const { getItem, clearItem } = useLocalStorage();
+  console.log(getItem("user"));
+  const { name: userName } = getItem("user");
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+    clearItem();
     router.push("/login");
     console.log("Logout triggered");
   };
