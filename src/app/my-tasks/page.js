@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from "react";
 import useLocalStorage from "../hooks/useLocalStorage";
+import TaskItem from "../components/TaskItem";
 
 // Replace with real auth logic
 
 export default function MyTasks() {
-  const [currentUser, setCurrentUser] = useState("");
   const [tasks, setTasks] = useState([]);
   const [statusFilter, setStatusFilter] = useState("");
   const [priorityFilter, setPriorityFilter] = useState("");
@@ -14,24 +14,11 @@ export default function MyTasks() {
   const [loading, setLoading] = useState(true);
 
   const { getItem } = useLocalStorage();
-  
-  console.log(getItem("token"));
+  const token = getItem("token");
+  const currentUser = getItem("user");
 
   useEffect(() => {
     const fetchTasks = async () => {
-      getItem("token");
-      getItem("user");
-
-      console.log(user);
-      if (user) {
-        try {
-          const parsed = JSON.parse(user);
-          setCurrentUser(parsed.name || "User");
-        } catch {
-          setCurrentUser("User");
-        }
-      }
-
       try {
         const res = await fetch("/api/tasks", {
           method: "GET",
@@ -52,7 +39,7 @@ export default function MyTasks() {
   }, []);
 
   const filteredTasks = tasks.filter((task) => {
-    const matchesUser = task.assignedTo === currentUser; // Only tasks assigned to this user
+    const matchesUser = task.assignedTo === currentUser?.name; // Only tasks assigned to this user
     const matchesStatus = statusFilter ? task.status === statusFilter : true;
     const matchesPriority = priorityFilter
       ? task.priority === priorityFilter
@@ -103,52 +90,10 @@ export default function MyTasks() {
         </select>
       </div>
 
-      {/* Task Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2  lg:grid-cols-2 xl:grid-cols-3 gap-6">
         {filteredTasks.length ? (
-          filteredTasks.map((task) => (
-            <div
-              key={task._id}
-              className="bg-gradient-to-br from-white via-gray-50 to-gray-100 p-5 rounded-2xl shadow-md hover:shadow-xl transition duration-300 border border-gray-200"
-            >
-              <div className="flex items-center justify-between mb-2">
-                <h2 className="text-xl font-bold text-gray-800">
-                  {task.title}
-                </h2>
-                <span
-                  className={`px-3 py-1 text-xs font-semibold rounded-full ${
-                    task.priority === "high"
-                      ? "bg-red-100 text-red-700"
-                      : task.priority === "medium"
-                      ? "bg-yellow-100 text-yellow-700"
-                      : "bg-green-100 text-green-700"
-                  }`}
-                >
-                  {task.priority.toUpperCase()}
-                </span>
-              </div>
-
-              <p className="text-gray-700 mb-3">{task.description}</p>
-
-              <div className="text-sm text-gray-600 space-y-1">
-                <p>
-                  <strong>Status:</strong> {task.status}
-                </p>
-                <p>
-                  <strong>Due:</strong>{" "}
-                  {task.dueDate
-                    ? new Date(task.dueDate).toLocaleDateString()
-                    : "N/A"}
-                </p>
-                <p>
-                  <strong>Assigned To:</strong> {task.assignedTo}
-                </p>
-                <p>
-                  <strong>Created:</strong>{" "}
-                  {new Date(task.createdAt).toLocaleDateString()}
-                </p>
-              </div>
-            </div>
+          filteredTasks.map((task, index) => (
+            <TaskItem key={index} task={task} index={index} />
           ))
         ) : (
           <p className="text-gray-500">No tasks found.</p>

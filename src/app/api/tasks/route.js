@@ -17,10 +17,13 @@ export async function GET(req) {
 }
 
 export async function POST(req) {
+ 
   try {
-    verifyTokenFromHeader(req); // 🔐
+    verifyTokenFromHeader(req); 
     await connectDB();
     const body = await req.json();
+    console.log(body,"body");
+   
     const task = await Task.create(body);
     return Response.json(task, { status: 201 });
   } catch (err) {
@@ -29,3 +32,4 @@ export async function POST(req) {
     });
   }
 }
+

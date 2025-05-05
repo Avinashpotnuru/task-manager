@@ -2,6 +2,7 @@ import { connectDB } from "@/lib/dbConnect";
 import bcrypt from "bcryptjs";
 
 import User from "@/models/user";
+import { verifyTokenFromHeader } from "@/utils/verifyToken";
 
 export async function POST(req) {
   try {
@@ -50,6 +51,23 @@ export async function POST(req) {
   } catch (error) {
     console.error("Registration Error:", error);
     return new Response(JSON.stringify({ message: "Something went wrong" }), {
+      status: 500,
+    });
+  }
+}
+
+export async function GET(req) {
+  try {
+    verifyTokenFromHeader(req);
+    await connectDB();
+
+    const users = await User.find({}, "name email"); 
+    return new Response(JSON.stringify(users), {
+      status: 200,
+    });
+  } catch (error) {
+    console.error("Get Users Error:", error);
+    return new Response(JSON.stringify({ message: "Failed to fetch users" }), {
       status: 500,
     });
   }

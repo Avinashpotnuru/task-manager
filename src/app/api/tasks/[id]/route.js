@@ -7,8 +7,8 @@ import Task from "@/models/task";
 export async function PUT(req, { params }) {
   await connectDB();
 
-  const { id } = params;
-  const { title, description, status, priority, dueDate, assignedTo } =
+  const { id } = await params;
+  const { title, description, status, priority, dueDate, assignedTo , createdBy} =
     await req.json();
 
   try {
@@ -16,7 +16,7 @@ export async function PUT(req, { params }) {
     // Find the task by ID and update it
     const task = await Task.findByIdAndUpdate(
       id,
-      { title, description, status, priority, dueDate, assignedTo },
+      { title, description, status, priority, dueDate, assignedTo, createdBy },
       { new: true } // Return the updated task
     );
 

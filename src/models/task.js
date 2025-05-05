@@ -27,6 +27,9 @@ const TaskSchema = new mongoose.Schema(
     assignedTo: {
       type: String, // or ObjectId if linked to a User model
     },
+    createdBy: {
+      type: String, // or ObjectId if linked to a User model
+    },
   },
   { timestamps: true }
 );

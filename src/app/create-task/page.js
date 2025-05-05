@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import { useEffect } from "react";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import useLocalStorage from "../hooks/useLocalStorage";
 
 export default function TaskForm({ task = null, onSuccess }) {
   const {
@@ -15,40 +16,44 @@ export default function TaskForm({ task = null, onSuccess }) {
     defaultValues: task || {},
   });
 
+  const { getItem } = useLocalStorage();
+  const currentUser = getItem("user");
+
+  const today = new Date().toISOString().split("T")[0];
+
   useEffect(() => {
     if (task) {
-      reset(task); // update form when task prop changes
+      const formattedTask = {
+        ...task,
+        dueDate: task.dueDate?.split("T")[0],
+      };
+      reset(formattedTask);
     }
   }, [task, reset]);
 
- const onSubmit = async (data) => {
-   const token = localStorage.getItem("token");
-   try {
-     const response = await fetch(`/api/tasks${task ? `/${task._id}` : ""}`, {
-       method: task ? "PUT" : "POST",
-       body: JSON.stringify(data),
-       headers: {
-         "Content-Type": "application/json",
-         Authorization: `Bearer ${token}`,
-       },
-     });
+  const onSubmit = async (data) => {
+    const token = localStorage.getItem("token");
+    try {
+      const response = await fetch(`/api/tasks${task ? `/${task._id}` : ""}`, {
+        method: task ? "PUT" : "POST",
+        body: JSON.stringify({ ...data, createdBy: currentUser.name }),
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-     if (!response.ok) {
-       throw new Error("Task save failed");
-     }
+      if (!response.ok) throw new Error("Task save failed");
 
-     const result = await response.json();
-     toast.success(`Task ${task ? "updated" : "created"} successfully!`);
-
-     // Reset form fields after successful task creation/update
-     reset(); // This will reset the form to its initial state.
-
-     if (onSuccess) onSuccess(result);
-   } catch (error) {
-     console.error("Error:", error);
-     toast.error("Failed to save task.");
-   }
- };
+      const result = await response.json();
+      toast.success(`Task ${task ? "updated" : "created"} successfully!`);
+      reset();
+      if (onSuccess) onSuccess(result);
+    } catch (error) {
+      console.error("Error:", error);
+      toast.error("Failed to save task.");
+    }
+  };
 
   return (
     <div className="mt-6">
@@ -81,43 +86,63 @@ export default function TaskForm({ task = null, onSuccess }) {
             Description
           </label>
           <textarea
-            {...register("description")}
+            {...register("description", {
+              maxLength: {
+                value: 500,
+                message: "Description too long (max 500 characters)",
+              },
+            })}
             rows={3}
             placeholder="Enter task details"
             className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
+          {errors.description && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.description.message}
+            </p>
+          )}
         </div>
 
         {/* Status & Priority */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Status
+              Status <span className="text-red-500">*</span>
             </label>
             <select
-              {...register("status")}
+              {...register("status", { required: "Status is required" })}
               className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <option value="">status</option>
+              <option value="">Select status</option>
               <option value="pending">Pending</option>
               <option value="in-progress">In Progress</option>
               <option value="completed">Completed</option>
             </select>
+            {errors.status && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.status.message}
+              </p>
+            )}
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Priority
+              Priority <span className="text-red-500">*</span>
             </label>
             <select
-              {...register("priority")}
+              {...register("priority", { required: "Priority is required" })}
               className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <option value=""> Priority</option>
+              <option value="">Select priority</option>
               <option value="low">Low</option>
               <option value="medium">Medium</option>
               <option value="high">High</option>
             </select>
+            {errors.priority && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.priority.message}
+              </p>
+            )}
           </div>
         </div>
 
@@ -125,28 +150,46 @@ export default function TaskForm({ task = null, onSuccess }) {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Due Date
+              Due Date <span className="text-red-500">*</span>
             </label>
             <input
               type="date"
-              {...register("dueDate")}
+              {...register("dueDate", {
+                required: "Due date is required",
+              })}
               className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
+            {errors.dueDate && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.dueDate.message}
+              </p>
+            )}
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Assigned To
+              Assigned To <span className="text-red-500">*</span>
             </label>
             <input
-              {...register("assignedTo")}
+              {...register("assignedTo", {
+                required: "Assignee is required",
+                minLength: {
+                  value: 3,
+                  message: "Assignee name should be at least 3 characters long",
+                },
+              })}
               placeholder="Assignee name"
               className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
+            {errors.assignedTo && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.assignedTo.message}
+              </p>
+            )}
           </div>
         </div>
 
-        {/* Submit */}
+        {/* Submit Button */}
         <button
           type="submit"
           className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition duration-300"
