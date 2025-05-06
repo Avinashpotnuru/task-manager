@@ -1,48 +1,51 @@
 "use client";
-import React from 'react'
+import React from "react";
 import { useForm } from "react-hook-form";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 import useStorageAuth from "../hooks/useLocalStorage";
-import { toast } from 'react-toastify';
+import { toast } from "react-toastify";
 const LoginForm = () => {
-     const {
-       register,
-       handleSubmit,
-       formState: { errors },
-     } = useForm();
-     const [isError, setIsError] = useState(false);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm();
+  const [isError, setIsError] = useState(false);
 
-     const { setItem } = useStorageAuth();
-     const router = useRouter();
+  const { setItem } = useStorageAuth();
+  const router = useRouter();
 
-     const onSubmit = async (data) => {
-       try {
-         const response = await fetch("/api/login", {
-           method: "POST",
-           body: JSON.stringify(data),
-           headers: { "Content-Type": "application/json" },
-         });
+  const onSubmit = async (data) => {
+    try {
+      const response = await fetch("/api/login", {
+        method: "POST",
+        body: JSON.stringify(data),
+        headers: { "Content-Type": "application/json" },
+      });
 
-         const result = await response.json();
+      const result = await response.json();
 
-         if (response.ok) {
-           setItem("token", result.token);
-           setItem("user", JSON.stringify(result.user));
+      if (response.ok) {
+        setItem("token", result.token);
+        setItem("user", JSON.stringify(result.user));
 
-           toast.success("Login successful!");
-           router.push("/");
-         } else {
-           setIsError(true);
-           toast.error(result.message || "Login failed");
-         }
-       } catch (error) {
-         console.error("Login failed", error);
-         setIsError(true);
-         toast.error("Something went wrong. Please try again.");
-       }
-     };
+        toast.success("Login successful!");
+        window.location.href = "/";
+        // setTimeout(() => {
+        //   router.push("/");
+        // }, 200);
+      } else {
+        setIsError(true);
+        toast.error(result.message || "Login failed");
+      }
+    } catch (error) {
+      console.error("Login failed", error);
+      setIsError(true);
+      toast.error("Something went wrong. Please try again.");
+    }
+  };
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
@@ -99,6 +102,6 @@ const LoginForm = () => {
       </p>
     </form>
   );
-}
+};
 
-export default LoginForm
+export default LoginForm;
