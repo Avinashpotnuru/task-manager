@@ -13,7 +13,6 @@
     "bcryptjs": "^3.0.2",
     "cookie": "^1.0.2",
     "jsonwebtoken": "^9.0.2",
-    "lightningcss": "^1.29.3",
     "mongoose": "^8.14.1",
     "next": "^15.3.1",
     "react": "^19.0.0",
@@ -27,6 +26,7 @@
     "@tailwindcss/postcss": "^4",
     "eslint": "^9",
     "eslint-config-next": "15.3.1",
+    "lightningcss": "^1.29.3",
     "tailwindcss": "^4"
   }
 }
