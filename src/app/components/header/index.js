@@ -8,20 +8,19 @@ export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   const router = useRouter();
   const { getItem, clearItem } = useLocalStorage();
-  console.log(getItem("user"));
+
   const { name: userName } = getItem("user");
 
   const handleLogout = () => {
     clearItem();
     router.push("/login");
-    console.log("Logout triggered");
+ 
   };
 
   return (
     <header className="bg-white shadow-md fixed top-0 left-0 w-full z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16 items-center">
-          {/* Brand */}
           <div
             onClick={() => (window.location.href = "/")}
             className="text-2xl font-extrabold text-indigo-600 cursor-pointer hover:opacity-80 transition"
@@ -29,7 +28,6 @@ export default function Header() {
             TaskManager
           </div>
 
-          {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-6">
             <Link
               href="/my-tasks"
@@ -57,7 +55,6 @@ export default function Header() {
             </button>
           </nav>
 
-          {/* Mobile Menu Button */}
           <button
             onClick={() => setMenuOpen(!menuOpen)}
             className="md:hidden text-gray-800 text-2xl focus:outline-none"
@@ -66,7 +63,6 @@ export default function Header() {
           </button>
         </div>
 
-        {/* Mobile Navigation */}
         {menuOpen && (
           <div className="md:hidden bg-white shadow-md px-4 py-4 space-y-3 animate-slide-down">
             <Link

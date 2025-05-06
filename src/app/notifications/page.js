@@ -17,15 +17,9 @@ function TaskForm() {
   const token = getItem("token");
   const currentUser = getItem("user");
 
-  // const serviceId = process.env.SERVICE_ID;
-  // const templateId = process.env.TEMPLATE_ID;
-  // const publicKey = process.env.PUBLIC_KEY;
-
-  const SERVICE_ID = "service_oql7bhj";
-  const TEMPLATE_ID = "template_zm935ps";
-  const PUBLIC_KEY = "QfEGbzlQ-M-R-nrmU";
-
-
+  const SERVICE_ID = process.env.NEXT_PUBLIC_SERVICE_ID;
+  const TEMPLATE_ID = process.env.NEXT_PUBLIC_TEMPLATE_ID;
+  const PUBLIC_KEY = process.env.NEXT_PUBLIC_PUBLIC_KEY;
 
   const onSubmit = async (data) => {
     try {
@@ -50,14 +44,11 @@ function TaskForm() {
       if (response.status === 200) {
         toast.success(" Email sent successfully!");
         reset();
-        
       } else {
         toast.error(" Email not sent. Please try again.");
-        
       }
     } catch (error) {
       toast.error(" Failed to send email.");
-     
     }
   };
 
@@ -69,16 +60,16 @@ function TaskForm() {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-        }); 
+        });
         const data = await res.json();
-        setUsers(data); 
+        setUsers(data);
       } catch (error) {
         console.error("Failed to fetch users:", error);
       }
     };
 
     fetchUsers();
-  }, []);
+  }, [token]);
 
   useEffect(() => {
     const fetchTasks = async () => {
@@ -98,7 +89,7 @@ function TaskForm() {
       }
     };
     fetchTasks();
-  }, []);
+  }, [token]);
 
   if (loading) {
     return <div>Loading...</div>;

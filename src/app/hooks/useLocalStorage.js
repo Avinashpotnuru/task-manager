@@ -1,7 +1,6 @@
 import { useCallback } from "react";
 
 const useLocalStorage = () => {
-  // Set value (token/user object) to localStorage with a dynamic key
   const setItem = useCallback((key, value) => {
     try {
       const val = typeof value === "object" ? JSON.stringify(value) : value;
@@ -11,14 +10,13 @@ const useLocalStorage = () => {
     }
   }, []);
 
-  // Get value from localStorage with a dynamic key
   const getItem = useCallback((key) => {
     try {
       const item = localStorage.getItem(key);
       try {
-        return JSON.parse(item); // Try parsing JSON (for objects)
+        return JSON.parse(item); 
       } catch {
-        return item; // Return as-is (for strings)
+        return item; 
       }
     } catch (error) {
       console.error(error);
@@ -26,7 +24,7 @@ const useLocalStorage = () => {
     }
   }, []);
 
-  // Clear item by key
+
   const clearItem = useCallback((key) => {
     try {
       localStorage.removeItem(key);
