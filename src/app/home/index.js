@@ -5,6 +5,7 @@ import { toast } from "react-toastify";
 import TaskForm from "../create-task/page";
 import TaskItem from "../components/TaskItem";
 import useLocalStorage from "../hooks/useLocalStorage";
+import { useRouter } from "next/router";
 
 export default function HomePage() {
   const [tasks, setTasks] = useState([]);
@@ -13,16 +14,17 @@ export default function HomePage() {
   const [editTask, setEditTask] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState({ status: "", priority: "", due: "" });
-   const { getItem } = useLocalStorage();
+  const { getItem } = useLocalStorage();
+ 
+  const token = getItem("token");
 
-   const currentUser = getItem("user");
-
-
-   
-
+  const currentUser = getItem("user");
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    if (!token) {
+      router.push("/");
+    }
+
     const fetchTasks = async () => {
       try {
         const res = await fetch("/api/tasks", {
@@ -43,7 +45,7 @@ export default function HomePage() {
     };
 
     fetchTasks();
-  }, []);
+  }, [token]);
 
   const handleCreate = () => {
     setEditTask(null);
@@ -121,15 +123,15 @@ export default function HomePage() {
   });
 
   // 📊 Dashboard data
- const assignedTasks = tasks.filter(
-   (task) => task.assignedTo === currentUser.name
- );
- const createdTasks = tasks.filter(
-   (task) => task.createdBy === currentUser.name
- ); // Assuming `createdBy` is part of the task data
- const overdueTasks = tasks.filter(
-   (task) => new Date(task.dueDate) < new Date() && task.status !== "completed"
- );
+  const assignedTasks = tasks.filter(
+    (task) => task.assignedTo === currentUser.name
+  );
+  const createdTasks = tasks.filter(
+    (task) => task.createdBy === currentUser.name
+  ); // Assuming `createdBy` is part of the task data
+  const overdueTasks = tasks.filter(
+    (task) => new Date(task.dueDate) < new Date() && task.status !== "completed"
+  );
 
   return (
     <main className="p-6 w-full flex flex-col mt-15">
@@ -219,6 +221,7 @@ export default function HomePage() {
             key={id}
             task={task}
             index={task._id}
+            currentUser={currentUser}
             handleEdit={handleEdit}
             handleDelete={handleDelete}
           />

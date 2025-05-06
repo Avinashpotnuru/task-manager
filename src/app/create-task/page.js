@@ -80,9 +80,10 @@ export default function TaskForm({ task = null, onSuccess }) {
     }
   };
 
-   const filterUsers = users?.filter(
-     (user) => user.email !== currentUser?.email
-   );
+  const filterUsers = [
+    { name: currentUser?.name, email: currentUser?.email },
+    ...users?.filter((user) => user.email !== currentUser?.email),
+  ];
 
   return (
     <div className="mt-6">

@@ -1,10 +1,25 @@
-"use client"; // Ensuring client-side rendering
+"use client";
 
+import { useState } from "react";
 import { FaEdit, FaTrash } from "react-icons/fa";
 import { usePathname } from "next/navigation";
+import { toast } from "react-toastify";
 
-const TaskItem = ({ task, index, handleEdit, handleDelete }) => {
+const TaskItem = ({ task, index, handleEdit, handleDelete, currentUser }) => {
   const pathname = usePathname();
+  const [tooltipVisible, setTooltipVisible] = useState(false);
+
+  const isOwner = task.createdBy === currentUser.name;
+
+  const handleAction = (actionType) => {
+    if (!isOwner) {
+      toast.info("You don’t have access to edit or delete others' tasks");
+      return;
+    }
+
+    if (actionType === "edit") handleEdit(task);
+    if (actionType === "delete") handleDelete(index);
+  };
 
   return (
     <div
@@ -16,20 +31,29 @@ const TaskItem = ({ task, index, handleEdit, handleDelete }) => {
         {pathname === "/" && (
           <div className="flex space-x-3">
             <button
-              onClick={() => handleEdit(task)}
-              className="text-blue-600 hover:text-blue-800"
+              onClick={() => handleAction("edit")}
+              className={`${
+                isOwner
+                  ? "text-blue-600 hover:text-blue-800"
+                  : "text-gray-400 cursor-pointer"
+              }`}
+              title={isOwner ? "Edit task" : "No access"}
             >
               <FaEdit />
             </button>
             <button
-              onClick={() => handleDelete(index)}
-              className="text-red-600 hover:text-red-800"
+              onClick={() => handleAction("delete")}
+              className={`${
+                isOwner
+                  ? "text-red-600 hover:text-red-800"
+                  : "text-gray-400 cursor-pointer"
+              }`}
+              title={isOwner ? "Delete task" : "No access"}
             >
               <FaTrash />
             </button>
           </div>
         )}
-
         <span
           className={`px-3 py-1 text-xs font-semibold rounded-full ${
             task.priority === "high"
@@ -51,7 +75,9 @@ const TaskItem = ({ task, index, handleEdit, handleDelete }) => {
         </p>
         <p>
           <strong>Due:</strong>{" "}
-          {task.dueDate ? new Date(task.dueDate).toLocaleDateString("en-GB") : "N/A"}
+          {task.dueDate
+            ? new Date(task.dueDate).toLocaleDateString("en-GB")
+            : "N/A"}
         </p>
         <p>
           <strong>Assigned To:</strong> {task.assignedTo}
@@ -59,6 +85,10 @@ const TaskItem = ({ task, index, handleEdit, handleDelete }) => {
         <p>
           <strong>Created:</strong>{" "}
           {new Date(task.createdAt).toLocaleDateString()}
+        </p>
+        <p>
+          <strong>Created by:</strong>{" "}
+          {task.createdBy === currentUser.name ? "You" : task.createdBy}
         </p>
       </div>
     </div>

@@ -1,4 +1,5 @@
-import { connectDB } from "@/lib/mongodb";
+
+import { connectDB } from "@/lib/dbConnect";
 import Todo from "@/models/todo";
 
 export async function GET(_, { params }) {
