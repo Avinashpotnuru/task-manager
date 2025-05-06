@@ -29,7 +29,7 @@ A full-stack task management application built with **Next.js**, **React**, **Mo
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/yourusername/task-manager.git
+git clone https://github.com/Avinashpotnuru/task-manager/.git
 cd task-manager
 ```
 
@@ -75,4 +75,4 @@ Visit [http://localhost:3000](http://localhost:3000) to view the app.
 
 ## ✨ Author
 
-Made with ❤️ by [Your Name](https://github.com/yourusername)
+Made with ❤️ by [Your Name](https://github.com/Avinashpotnuru)
