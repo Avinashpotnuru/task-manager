@@ -3,6 +3,7 @@ import User from "@/models/user";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
+// Secret key — keep this in a .env file in production
 const JWT_SECRET = process.env.JWT_SECRET || "your_jwt_secret";
 
 export async function POST(req) {
@@ -34,12 +35,14 @@ export async function POST(req) {
       );
     }
 
+    // 🔐 Create JWT Token
     const token = jwt.sign(
       { userId: user._id, email: user.email },
       JWT_SECRET,
       { expiresIn: "1h" }
     );
 
+    // ✅ Return token and user data
     return new Response(
       JSON.stringify({
         message: "Login successful",

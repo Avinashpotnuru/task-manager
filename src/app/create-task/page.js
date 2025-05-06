@@ -1,14 +1,12 @@
 "use client";
 
 import { useForm } from "react-hook-form";
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import useLocalStorage from "../hooks/useLocalStorage";
 
 export default function TaskForm({ task = null, onSuccess }) {
-    const [users, setUsers] = useState([]); // New state for users
-  
   const {
     register,
     handleSubmit,
@@ -19,7 +17,6 @@ export default function TaskForm({ task = null, onSuccess }) {
   });
 
   const { getItem } = useLocalStorage();
-  const token = getItem("token");
   const currentUser = getItem("user");
 
   const today = new Date().toISOString().split("T")[0];
@@ -33,28 +30,6 @@ export default function TaskForm({ task = null, onSuccess }) {
       reset(formattedTask);
     }
   }, [task, reset]);
-
-   useEffect(() => {
-     const fetchUsers = async () => {
-       try {
-         const res = await fetch("/api/register", {
-           headers: {
-             "Content-Type": "application/json",
-             Authorization: `Bearer ${token}`,
-           },
-         });
-         const data = await res.json();
-         setUsers(data);
-       } catch (error) {
-         console.error("Failed to fetch users:", error);
-       }
-     };
-
-     fetchUsers();
-   }, [token]);
-
-   
-
 
   const onSubmit = async (data) => {
     const token = localStorage.getItem("token");
@@ -79,10 +54,6 @@ export default function TaskForm({ task = null, onSuccess }) {
       toast.error("Failed to save task.");
     }
   };
-
-   const filterUsers = users?.filter(
-     (user) => user.email !== currentUser?.email
-   );
 
   return (
     <div className="mt-6">
@@ -199,18 +170,17 @@ export default function TaskForm({ task = null, onSuccess }) {
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Assigned To <span className="text-red-500">*</span>
             </label>
-            <select
-              {...register("assignedTo")}
-              required
-              className="w-full border p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">Assign to...</option>
-              {filterUsers?.map((user, id) => (
-                <option key={id} value={user.name}>
-                  {user.name.replace(/\b\w/g, (char) => char.toUpperCase())}
-                </option>
-              ))}
-            </select>
+            <input
+              {...register("assignedTo", {
+                required: "Assignee is required",
+                minLength: {
+                  value: 3,
+                  message: "Assignee name should be at least 3 characters long",
+                },
+              })}
+              placeholder="Assignee name"
+              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
             {errors.assignedTo && (
               <p className="text-red-500 text-sm mt-1">
                 {errors.assignedTo.message}
