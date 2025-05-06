@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import useLocalStorage from "../hooks/useLocalStorage";
 import TaskItem from "../components/TaskItem";
 
-// Replace with real auth logic
 
 export default function MyTasks() {
   const [tasks, setTasks] = useState([]);
@@ -36,7 +35,7 @@ export default function MyTasks() {
       }
     };
     fetchTasks();
-  }, []);
+  }, [token]);
 
   const filteredTasks = tasks.filter((task) => {
     const matchesUser = task.assignedTo === currentUser?.name; // Only tasks assigned to this user

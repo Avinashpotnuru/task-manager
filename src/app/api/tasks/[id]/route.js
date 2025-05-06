@@ -13,11 +13,10 @@ export async function PUT(req, { params }) {
 
   try {
     verifyTokenFromHeader(req)
-    // Find the task by ID and update it
     const task = await Task.findByIdAndUpdate(
       id,
       { title, description, status, priority, dueDate, assignedTo, createdBy },
-      { new: true } // Return the updated task
+      { new: true } 
     );
 
     if (!task) {
@@ -39,7 +38,6 @@ export async function DELETE(req, { params }) {
 
   try {
     verifyTokenFromHeader(req)
-    // Find the task by ID and remove it
     const task = await Task.findByIdAndDelete(id);
 
     if (!task) {

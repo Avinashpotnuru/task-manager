@@ -30,26 +30,21 @@ export default function LoginForm() {
       const result = await response.json();
 
       if (response.ok) {
-        // Store the token in localStorage
-        //  setItem("token", result.token); // ✅ token (string)
-        //  setItem("user", result.user);
-
-        // localStorage.setItem("token", result.token);
-        // localStorage.setItem("user", JSON.stringify(result.user));
+       
 
         setItem("token", result.token);
         setItem("user", JSON.stringify(result.user));
 
-        toast.success("Login successful!"); // Show success toast
-        router.push("/"); // Navigate to home
+        toast.success("Login successful!"); 
+        router.push("/"); 
       } else {
-        setIsError(true); // Show error message
-        toast.error(result.message || "Login failed"); // Show error toast
+        setIsError(true); 
+        toast.error(result.message || "Login failed"); 
       }
     } catch (error) {
       console.error("Login failed", error);
-      setIsError(true); // Handle any error during login
-      toast.error("Something went wrong. Please try again."); // Show error toast
+      setIsError(true); 
+      toast.error("Something went wrong. Please try again.");
     }
   };
 
@@ -60,14 +55,12 @@ export default function LoginForm() {
     >
       <h2 className="text-2xl font-bold text-center text-gray-800">Login</h2>
 
-      {/* Error Message for Invalid Credentials */}
       {isError && (
         <p className="text-red-500 text-sm text-center">
           Invalid credentials. Please try again.
         </p>
       )}
 
-      {/* Email Input */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
           Email
@@ -82,7 +75,6 @@ export default function LoginForm() {
         )}
       </div>
 
-      {/* Password Input */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
           Password
@@ -97,7 +89,6 @@ export default function LoginForm() {
         )}
       </div>
 
-      {/* Submit Button */}
       <button
         type="submit"
         className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg"
@@ -105,7 +96,6 @@ export default function LoginForm() {
         Login
       </button>
 
-      {/* Registration Link */}
       <p className="text-center text-sm text-gray-600 mt-4">
         Don&apos;t have an account?{" "}
         <a href="/register" className="text-blue-600 hover:text-blue-700">

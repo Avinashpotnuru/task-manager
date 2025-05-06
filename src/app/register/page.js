@@ -3,9 +3,12 @@
 import { useForm } from "react-hook-form";
 import { useState } from "react";
 import { toast } from "react-toastify";
+import { useRouter } from "next/navigation";
+
 import "react-toastify/dist/ReactToastify.css";
 
 export default function RegisterForm() {
+  const router = useRouter();
   const {
     register,
     handleSubmit,
@@ -27,13 +30,13 @@ export default function RegisterForm() {
       const result = await response.json();
 
       if (response.ok) {
-        toast.success("Registration successful!");
+        toast.success("Registration successful! Please login.");
         reset();
+        router.push("/login");
       } else {
         toast.error(result.message || "Registration failed");
       }
     } catch (error) {
-      console.error("Registration failed", error);
       toast.error("Something went wrong. Please try again.");
     }
   };
