@@ -25,7 +25,7 @@ export default function HomePage() {
 
   useEffect(() => {
     if (!token) {
-      router.push("/");
+      router.push("/login");
     }
   }, [token, router]);
 
