@@ -21,9 +21,9 @@ export default function HomePage() {
   const currentUser = getItem("user");
 
   useEffect(() => {
-    if (!token) {
-      router.push("/");
-    }
+    // if (!token) {
+    //   router.push("/");
+    // }
 
     const fetchTasks = async () => {
       try {
