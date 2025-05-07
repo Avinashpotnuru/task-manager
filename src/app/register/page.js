@@ -42,6 +42,7 @@ export default function RegisterForm() {
   };
 
   return (
+    <div className="flex items-center justify-center min-h-screen ">
     <form
       onSubmit={handleSubmit(onSubmit)}
       className="w-full max-w-sm mx-auto bg-white p-8 rounded-xl shadow-lg space-y-6"
@@ -144,5 +145,6 @@ export default function RegisterForm() {
         </a>
       </p>
     </form>
+    </div>
   );
 }

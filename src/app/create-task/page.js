@@ -68,7 +68,7 @@ export default function TaskForm({ task = null, onSuccess }) {
         },
       });
 
-      if (!response.ok) throw new Error("Task save failed");
+      if (!response.ok) console.error("Task save failed");
 
       const result = await response.json();
       toast.success(`Task ${task ? "updated" : "created"} successfully!`);

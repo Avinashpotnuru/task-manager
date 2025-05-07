@@ -1,22 +1,14 @@
 "use client";
 
-import { useState } from "react";
 import { FaEdit, FaTrash } from "react-icons/fa";
 import { usePathname } from "next/navigation";
-import { toast } from "react-toastify";
 
 const TaskItem = ({ task, index, handleEdit, handleDelete, currentUser }) => {
   const pathname = usePathname();
-  const [tooltipVisible, setTooltipVisible] = useState(false);
 
   const isOwner = task.createdBy === currentUser.name;
 
   const handleAction = (actionType) => {
-    if (!isOwner) {
-      toast.info("You don’t have access to edit or delete others' tasks");
-      return;
-    }
-
     if (actionType === "edit") handleEdit(task);
     if (actionType === "delete") handleDelete(index);
   };
@@ -37,7 +29,11 @@ const TaskItem = ({ task, index, handleEdit, handleDelete, currentUser }) => {
                   ? "text-blue-600 hover:text-blue-800"
                   : "text-gray-400 cursor-pointer"
               }`}
-              title={isOwner ? "Edit task" : "No access"}
+              title={
+                isOwner
+                  ? "Edit task"
+                  : "You don’t have access to edit others' tasks"
+              }
             >
               <FaEdit />
             </button>
@@ -48,7 +44,11 @@ const TaskItem = ({ task, index, handleEdit, handleDelete, currentUser }) => {
                   ? "text-red-600 hover:text-red-800"
                   : "text-gray-400 cursor-pointer"
               }`}
-              title={isOwner ? "Delete task" : "No access"}
+              title={
+                isOwner
+                  ? "Delete task"
+                  : "You don’t have access to delete others' tasks"
+              }
             >
               <FaTrash />
             </button>

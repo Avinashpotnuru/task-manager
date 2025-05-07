@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import useLocalStorage from "../hooks/useLocalStorage";
 import TaskItem from "../components/TaskItem";
-
+import { apiFetcher } from "@/utils/fetcher";
+import { useRouter } from "next/navigation";
 
 export default function MyTasks() {
   const [tasks, setTasks] = useState([]);
@@ -11,45 +12,58 @@ export default function MyTasks() {
   const [priorityFilter, setPriorityFilter] = useState("");
   const [dueFilter, setDueFilter] = useState("all");
   const [loading, setLoading] = useState(true);
-
+  const router = useRouter();
   const { getItem } = useLocalStorage();
+
   const token = getItem("token");
-  const currentUser = getItem("user");
+  const currentUser = getItem("user")?.name;
+
+  const fetchTasks = useCallback(async () => {
+    try {
+      setLoading(true);
+      if (!token) {
+        router.push("/login");
+      }
+      const data = await apiFetcher({
+        url: "/api/tasks",
+        method: "GET",
+        token,
+      });
+
+      setTasks(data || []);
+    } catch (err) {
+      console.error(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }, [token, router]);
 
   useEffect(() => {
-    const fetchTasks = async () => {
-      try {
-        const res = await fetch("/api/tasks", {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        const data = await res.json();
-        setTasks(data || []);
-      } catch (error) {
-        console.error("Failed to fetch tasks:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchTasks();
-  }, [token]);
+  }, [fetchTasks]);
 
-  const filteredTasks = tasks.filter((task) => {
-    const matchesUser = task.assignedTo === currentUser?.name; // Only tasks assigned to this user
-    const matchesStatus = statusFilter ? task.status === statusFilter : true;
-    const matchesPriority = priorityFilter
-      ? task.priority === priorityFilter
-      : true;
-    const isOverdue =
-      dueFilter === "overdue"
-        ? new Date(task.dueDate) < new Date() && task.status !== "completed"
-        : true;
+  console.log(tasks);
 
-    return matchesUser && matchesStatus && matchesPriority && isOverdue;
-  });
+  const filteredTasks = useMemo(
+    () =>
+      tasks.filter((task) => {
+        const matchesUser =
+          task.assignedTo === currentUser || task.createdBy === currentUser;
+        const matchesStatus = statusFilter
+          ? task.status === statusFilter
+          : true;
+        const matchesPriority = priorityFilter
+          ? task.priority === priorityFilter
+          : true;
+        const isOverdue =
+          dueFilter === "overdue"
+            ? new Date(task.dueDate) < new Date() && task.status !== "completed"
+            : true;
+
+        return matchesUser && matchesStatus && matchesPriority && isOverdue;
+      }),
+    [tasks, currentUser, statusFilter, priorityFilter, dueFilter]
+  );
 
   if (loading) return <p className="text-center mt-10">Loading tasks...</p>;
 
@@ -92,7 +106,12 @@ export default function MyTasks() {
       <div className="grid grid-cols-1 sm:grid-cols-2  lg:grid-cols-2 xl:grid-cols-3 gap-6">
         {filteredTasks.length ? (
           filteredTasks.map((task, index) => (
-            <TaskItem key={index} task={task} index={index} />
+            <TaskItem
+              key={index}
+              task={task}
+              index={index}
+              currentUser={currentUser}
+            />
           ))
         ) : (
           <p className="text-gray-500">No tasks found.</p>

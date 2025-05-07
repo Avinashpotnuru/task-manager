@@ -49,7 +49,7 @@ export async function POST(req) {
       }
     );
   } catch (error) {
-    console.error("Registration Error:", error);
+    console.log("Registration Error:", error);
     return new Response(JSON.stringify({ message: "Something went wrong" }), {
       status: 500,
     });
@@ -66,7 +66,7 @@ export async function GET(req) {
       status: 200,
     });
   } catch (error) {
-    console.error("Get Users Error:", error);
+    console.log("Get Users Error:", error);
     return new Response(JSON.stringify({ message: "Failed to fetch users" }), {
       status: 500,
     });

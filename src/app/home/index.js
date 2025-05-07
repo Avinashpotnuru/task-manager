@@ -1,11 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "react-toastify";
 import TaskForm from "../create-task/page";
 import TaskItem from "../components/TaskItem";
 import useLocalStorage from "../hooks/useLocalStorage";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
+import { apiFetcher } from "@/utils/fetcher";
+import { filterTasks } from "@/utils/filterTasks";
 
 export default function HomePage() {
   const [tasks, setTasks] = useState([]);
@@ -15,29 +17,27 @@ export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState({ status: "", priority: "", due: "" });
   const { getItem } = useLocalStorage();
- 
+  const router = useRouter();
+
   const token = getItem("token");
 
   const currentUser = getItem("user");
 
   useEffect(() => {
-    // if (!token) {
-    //   router.push("/");
-    // }
+    if (!token) {
+      router.push("/");
+    }
+  }, [token, router]);
 
+  useEffect(() => {
     const fetchTasks = async () => {
       try {
-        const res = await fetch("/api/tasks", {
+        const data = await apiFetcher({
+          url: "/api/tasks",
           method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
+          token,
         });
 
-        if (!res.ok) throw new Error("Failed to fetch tasks");
-
-        const data = await res.json();
         setTasks(data || []);
       } catch (err) {
         setError(err.message);
@@ -47,47 +47,49 @@ export default function HomePage() {
     fetchTasks();
   }, [token]);
 
-  const handleCreate = () => {
+  const handleCreate = useCallback(() => {
     setEditTask(null);
     setShowModal(true);
-  };
+  }, []);
 
-  const handleEdit = (task) => {
+  const handleEdit = useCallback((task) => {
     setEditTask(task);
     setShowModal(true);
-  };
+  }, []);
 
-  const handleDelete = async (taskId) => {
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete this task?"
-    );
-    if (confirmDelete) {
-      try {
-        const token = localStorage.getItem("token");
-        const response = await fetch(`/api/tasks/${taskId}`, {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
+  const handleDelete = useCallback(
+    async (taskId) => {
+      const confirmDelete = window.confirm(
+        "Are you sure you want to delete this task?"
+      );
+      if (confirmDelete) {
+        try {
+          const response = await fetch(`/api/tasks/${taskId}`, {
+            method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          });
 
-        if (response.ok) {
-          toast.success("Task deleted successfully!");
-          setTasks((prevTasks) =>
-            prevTasks.filter((task) => task._id !== taskId)
-          );
-        } else {
-          toast.error("Failed to delete task.");
+          if (response.ok) {
+            toast.success("Task deleted successfully!");
+            setTasks((prevTasks) =>
+              prevTasks.filter((task) => task._id !== taskId)
+            );
+          } else {
+            toast.error("Failed to delete task.");
+          }
+        } catch (error) {
+          console.error("Error deleting task:", error);
+          toast.error("An error occurred while deleting the task.");
         }
-      } catch (error) {
-        console.error("Error deleting task:", error);
-        toast.error("An error occurred while deleting the task.");
       }
-    }
-  };
+    },
+    [token]
+  );
 
-  const handleSuccess = (newOrUpdatedTask) => {
+  const handleSuccess = useCallback((newOrUpdatedTask) => {
     setShowModal(false);
     setEditTask(null);
     setTasks((prevTasks) => {
@@ -100,37 +102,30 @@ export default function HomePage() {
         return [newOrUpdatedTask, ...prevTasks];
       }
     });
-  };
+  }, []);
 
-  // 🔎 Filtered tasks logic
-  const filteredTasks = tasks.filter((task) => {
-    const matchesSearch =
-      task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      task.description.toLowerCase().includes(searchQuery.toLowerCase());
-
-    const matchesStatus = filters.status
-      ? task.status === filters.status
-      : true;
-    const matchesPriority = filters.priority
-      ? task.priority === filters.priority
-      : true;
-    const matchesDue =
-      filters.due === "overdue"
-        ? new Date(task.dueDate) < new Date() && task.status !== "completed"
-        : true;
-
-    return matchesSearch && matchesStatus && matchesPriority && matchesDue;
-  });
-
-  // 📊 Dashboard data
-  const assignedTasks = tasks.filter(
-    (task) => task.assignedTo === currentUser.name
+  const filteredTasks = useMemo(
+    () => filterTasks(tasks, searchQuery, filters),
+    [tasks, searchQuery, filters]
   );
-  const createdTasks = tasks.filter(
-    (task) => task.createdBy === currentUser.name
-  ); // Assuming `createdBy` is part of the task data
-  const overdueTasks = tasks.filter(
-    (task) => new Date(task.dueDate) < new Date() && task.status !== "completed"
+
+  const assignedTasks = useMemo(
+    () => tasks.filter((task) => task.assignedTo === currentUser.name),
+    [tasks, currentUser]
+  );
+
+  const createdTasks = useMemo(
+    () => tasks.filter((task) => task.createdBy === currentUser.name),
+    [tasks, currentUser]
+  );
+
+  const overdueTasks = useMemo(
+    () =>
+      tasks.filter(
+        (task) =>
+          new Date(task.dueDate) < new Date() && task.status !== "completed"
+      ),
+    [tasks]
   );
 
   return (
@@ -145,7 +140,6 @@ export default function HomePage() {
         </button>
       </div>
 
-      {/* 🔍 Filters & Search */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <input
           type="text"
@@ -184,7 +178,6 @@ export default function HomePage() {
         </select>
       </div>
 
-      {/* 📊 Dashboard */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div className="bg-white p-4 rounded-xl shadow-md border">
           <h2 className="text-lg font-semibold text-gray-700 mb-1">
@@ -212,7 +205,6 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* 📋 Task Grid */}
       {error && <p className="text-red-500">{error}</p>}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
@@ -228,7 +220,6 @@ export default function HomePage() {
         ))}
       </div>
 
-      {/* 📄 Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl p-6 relative">

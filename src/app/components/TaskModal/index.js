@@ -8,6 +8,8 @@ import useLocalStorage from "@/app/hooks/useLocalStorage";
 export default function TaskModal({ isOpen, onClose, task, onSuccess }) {
   const { token } = useLocalStorage();
 
+  const [loading, setLoading] = useState(false);
+
   const {
     register,
     handleSubmit,
@@ -22,6 +24,7 @@ export default function TaskModal({ isOpen, onClose, task, onSuccess }) {
 
   const onSubmit = async (data) => {
     try {
+      setLoading(true);
       const response = await fetch(`/api/tasks${task ? `/${task._id}` : ""}`, {
         method: task ? "PUT" : "POST",
         headers: {
@@ -31,7 +34,7 @@ export default function TaskModal({ isOpen, onClose, task, onSuccess }) {
         body: JSON.stringify(data),
       });
 
-      if (!response.ok) throw new Error("Failed to save task");
+      if (!response.ok) console.error("Failed to save task");
 
       const result = await response.json();
       toast.success(`Task ${task ? "updated" : "created"} successfully!`);
@@ -39,6 +42,7 @@ export default function TaskModal({ isOpen, onClose, task, onSuccess }) {
       onClose();
     } catch (err) {
       console.error(err);
+      setLoading(false);
       toast.error("Error saving task");
     }
   };
@@ -108,9 +112,21 @@ export default function TaskModal({ isOpen, onClose, task, onSuccess }) {
               </button>
               <button
                 type="submit"
-                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                disabled={loading}
+                className={`px-4 py-2 rounded text-white transition duration-200
+    ${
+      loading
+        ? "bg-blue-400 cursor-not-allowed"
+        : "bg-blue-600 hover:bg-blue-700"
+    }`}
               >
-                {task ? "Update" : "Create"}
+                {loading
+                  ? task
+                    ? "Updating..."
+                    : "Creating..."
+                  : task
+                  ? "Update"
+                  : "Create"}
               </button>
             </div>
           </form>

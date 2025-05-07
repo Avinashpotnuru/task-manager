@@ -5,6 +5,7 @@ import useLocalStorage from "../hooks/useLocalStorage";
 import emailjs from "@emailjs/browser";
 import { toast } from "react-toastify";
 import { ClientSegmentRoot } from "next/dist/client/components/client-segment";
+import { apiFetcher } from "@/utils/fetcher";
 
 function TaskForm() {
   const { register, handleSubmit, reset } = useForm();
@@ -23,6 +24,7 @@ function TaskForm() {
 
   const onSubmit = async (data) => {
     try {
+      setLoading(true);
       const getUser = users.find((user) => user.email === data.assignedTo);
 
       const sendDetails = {
@@ -43,28 +45,29 @@ function TaskForm() {
 
       if (response.status === 200) {
         toast.success(" Email sent successfully!");
+        setLoading(false);
         reset();
       } else {
         toast.error(" Email not sent. Please try again.");
       }
     } catch (error) {
       toast.error(" Failed to send email.");
+      setLoading(false);
     }
   };
 
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const res = await fetch("/api/register", {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
+        const data = await apiFetcher({
+          url: "/api/register",
+          method: "GET",
+          token,
         });
-        const data = await res.json();
-        setUsers(data);
-      } catch (error) {
-        console.error("Failed to fetch users:", error);
+
+        setUsers(data || []);
+      } catch (err) {
+        console.error(err.message);
       }
     };
 
@@ -74,26 +77,21 @@ function TaskForm() {
   useEffect(() => {
     const fetchTasks = async () => {
       try {
-        const res = await fetch("/api/tasks", {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
+        const data = await apiFetcher({
+          url: "/api/tasks",
+          method: "GET",
+          token,
         });
-        const data = await res.json();
+
         setTasks(data || []);
-      } catch (error) {
-        console.error("Failed to fetch tasks:", error);
+      } catch (err) {
+        setError(err.message);
       } finally {
         setLoading(false);
       }
     };
     fetchTasks();
   }, [token]);
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
 
   const filterUsers = users.filter((user) => user.email !== currentUser?.email);
 
@@ -143,9 +141,16 @@ function TaskForm() {
 
         <button
           type="submit"
-          className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition duration-200"
+          disabled={loading}
+          className={`w-full py-2 px-4 rounded-md transition duration-200 
+    ${
+      loading
+        ? "bg-blue-400 cursor-not-allowed"
+        : "bg-blue-600 hover:bg-blue-700"
+    } 
+    text-white`}
         >
-          Send Alert
+          {loading ? "Sending..." : "Send Alert"}
         </button>
       </form>
     </div>

@@ -53,7 +53,7 @@ export async function POST(req) {
       { status: 200 }
     );
   } catch (error) {
-    console.error("Login Error:", error);
+    console.log("Login Error:", error);
     return new Response(JSON.stringify({ message: "Internal Server Error" }), {
       status: 500,
     });
